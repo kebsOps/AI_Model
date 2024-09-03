@@ -13,16 +13,16 @@ Description
 This endpoint allows you to download a previously generated image by providing its filename. The filename is returned in the response of the image generation request.
 How to Use
 
-## Prerequisites:
+## Prerequisites
 
 You should have already made a successful request to the  ``/generate`` endpoint.
 You should have received a response containing an ``image_url`` field.
 
 
-## Making the Request:
+## Making the Request
 
 Use the ``image_url`` provided in the generation response, or construct the URL using the filename.
-Send a GET request to this URL.
+Send a ``GET`` request to this URL.
 
 
 Example Using curl:
@@ -35,7 +35,7 @@ This will download the image and save it with its original filename.
 
 Example Using Postman:
 
-- Create a new GET request in Postman.
+- Create a new ``GET`` request in Postman.
 - Enter the URL: ```https://your-salad-cloud-url/retrieve-image/abc123-456def.png```
 - Send the request.
 - The image will be displayed in the response body. You can save it from there.
