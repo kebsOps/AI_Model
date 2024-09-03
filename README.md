@@ -1,4 +1,4 @@
-# Image Retrieval API
+# AI Image Retrieval API
 
 This document provides instructions on how to use the image retrieval endpoint of our AI-generated image service.
 
