@@ -1,6 +1,11 @@
-diffusers
+torch
+torchvision
+torchaudio
+numpy
+Pillow
 transformers
+diffusers
 accelerate
-fastapi
-uvicorn
-pillow
+safetensors
+gradio
+boto3

@@ -1,30 +1,48 @@
-FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+# Use a smaller base image
+FROM python:3.10-slim-buster
 
-# Container Working Directory
-WORKDIR /app
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy current directory contents /app 
-COPY . /app
-
-# Install additional dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libglib2.0-0 \
+    git \
+    wget \
+    ffmpeg \
     libsm6 \
     libxext6 \
-    libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Set working directory
+WORKDIR /app
 
-# Install packages list in requirements.txt
-COPY requirements.txt /app/
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir -r requirements.txt
+# Clone the Stable Diffusion Web UI repository
+RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git .
 
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY dreamshaper_8.safetensors /app/model/
+# Create directories for models and Loras
+RUN mkdir -p /app/models/Stable-diffusion \
+    /app/models/Lora \
+    /app/models/CheckpointsXL
 
+# Copy the script to sync with S3
+COPY sync_s3.sh /app/sync_s3.sh
+RUN chmod +x /app/sync_s3.sh
 
-EXPOSE 8000
+# Set up entry point
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# Run app.py when the container launches
-CMD ["uvicorn", "app:app", "--host", "::", "--port", "80"]
+# Expose the port that the Web UI will run on
+EXPOSE 7860
+
+# These are placeholder environment variables. Actual values should be provided at runtime.
+ENV AWS_ACCESS_KEY_ID=
+ENV AWS_SECRET_ACCESS_KEY=
+ENV AWS_DEFAULT_REGION=
+ENV S3_BUCKET_NAME=
+
+ENTRYPOINT ["/app/entrypoint.sh"]
