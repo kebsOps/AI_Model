@@ -47,7 +47,9 @@ This project deploys the Automatic1111 Stable Diffusion Web UI on Salad Cloud, w
 
 3. Build the Docker image:
    ```
-   docker build --platform linux/amd64 -t dreamshaper:v10 .
+
+   docker build --platform linux/amd64 -t dreamshaper:v15 .
+
    ```
 
 4. Push the Docker image to a registry accessible by Salad Cloud.
