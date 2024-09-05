@@ -1,7 +1,0 @@
-opencv-python
-pillow
-transformers
-diffusers
-accelerate
-safetensors
-gradio

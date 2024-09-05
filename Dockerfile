@@ -1,17 +1,32 @@
-# Use a smaller base image
-FROM python:3.10-slim-buster
+# Use a CUDA-compatible base image
+FROM nvidia/cuda:11.7.1-runtime-ubuntu22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies
+# Install system dependencies and Python
 RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
     git \
     wget \
     ffmpeg \
     libsm6 \
     libxext6 \
-    && rm -rf /var/lib/apt/lists/*
+    unzip \
+    curl \
+    iproute2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf awscliv2.zip aws
+
+# Enable IPv6
+RUN echo "net.ipv6.conf.all.disable_ipv6 = 0" >> /etc/sysctl.conf \
+    && echo "net.ipv6.conf.default.disable_ipv6 = 0" >> /etc/sysctl.conf \
+    && echo "net.ipv6.conf.lo.disable_ipv6 = 0" >> /etc/sysctl.conf
 
 # Set working directory
 WORKDIR /app
@@ -19,8 +34,10 @@ WORKDIR /app
 # Clone the Stable Diffusion Web UI repository
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git .
 
-# Install Python dependencies
+# Copy requirements file
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Create directories for models and Loras
@@ -31,6 +48,9 @@ RUN mkdir -p /app/models/Stable-diffusion \
 # Copy the script to sync with S3
 COPY sync_s3.sh /app/sync_s3.sh
 RUN chmod +x /app/sync_s3.sh
+
+# Copy the modified launch utils
+COPY launch_utils_patch.py /app/modules/launch_utils_patch.py
 
 # Set up entry point
 COPY entrypoint.sh /app/entrypoint.sh
