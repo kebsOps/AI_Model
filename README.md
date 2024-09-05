@@ -1,63 +1,102 @@
-# AI Image Retrieval API
+# Stable Diffusion Web UI on Salad Cloud
 
-This document provides instructions on how to use the image retrieval endpoint of our AI-generated image service.
+This project sets up Stable Diffusion Web UI to run on Salad Cloud, with support for S3 model synchronization and IPv6 compatibility.
 
-## Endpoint
+## Table of Contents
 
-```
-GET https://your-salad-cloud-url/retrieve-image/<filename>
-```
+- [Stable Diffusion Web UI on Salad Cloud](#stable-diffusion-web-ui-on-salad-cloud)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Usage](#usage)
+  - [File Structure](#file-structure)
+  - [Customization](#customization)
+  - [Troubleshooting](#troubleshooting)
+  - [Contributing](#contributing)
+  - [License](#license)
 
-Replace your-salad-cloud-url with the actual URL of your Salad Cloud deployment.
-Description
-This endpoint allows you to download a previously generated image by providing its filename. The filename is returned in the response of the image generation request.
-How to Use
+## Overview
+
+This project deploys the Automatic1111 Stable Diffusion Web UI on Salad Cloud, with the following features:
+
+- IPv6 compatibility for Salad Cloud
+- S3 synchronization for models and checkpoints
+- Dockerized environment for easy deployment
+- Automatic retry mechanism for S3 operations
 
 ## Prerequisites
 
-You should have already made a successful request to the  ``/generate`` endpoint.
-You should have received a response containing an ``image_url`` field.
+- Docker
+- AWS account with S3 bucket
+- Salad Cloud account
 
+## Setup
 
-## Making the Request
+1. Clone this repository:
+   ```
+   git clone https://your-repository-url.git
+   cd stable-diffusion-salad
+   ```
 
-Use the ``image_url`` provided in the generation response, or construct the URL using the filename.
-Send a ``GET`` request to this URL.
+2. Set up your AWS credentials and S3 bucket information. You'll need to provide these as environment variables when deploying to Salad Cloud:
+   - AWS_ACCESS_KEY_ID
+   - AWS_SECRET_ACCESS_KEY
+   - AWS_DEFAULT_REGION
+   - S3_BUCKET_NAME
 
+3. Build the Docker image:
+   ```
+   docker build --platform linux/amd64 -t dreamshaper:v10 .
+   ```
 
-Example Using curl:
+4. Push the Docker image to a registry accessible by Salad Cloud.
 
-```
-Copycurl -O -J "https://your-salad-cloud-url/retrieve-image/abc123-456def.png"
-```
+5. Deploy the container on Salad Cloud, ensuring you set the required environment variables.
 
-This will download the image and save it with its original filename.
+## Usage
 
-Example Using Postman:
+Once deployed, you can access the Stable Diffusion Web UI through the URL provided by Salad Cloud. The Web UI will be available on port 7860.
 
-- Create a new ``GET`` request in Postman.
-- Enter the URL: ```https://your-salad-cloud-url/retrieve-image/abc123-456def.png```
-- Send the request.
-- The image will be displayed in the response body. You can save it from there.
+The S3 synchronization script will automatically download models from your S3 bucket on startup and periodically sync changes back to S3.
 
+## File Structure
 
-## Response
+- `Dockerfile`: Defines the Docker image for the project
+- `requirements.txt`: Lists Python dependencies
+- `entrypoint.sh`: The entry point script for the Docker container
+- `sync_s3.sh`: Handles S3 synchronization
+- `launch_utils_patch.py`: Patches the launch utils for better IPv6 support
 
-- **Success:** The API will return the image file with a ``200 OK`` status code.
-- **Failure:** If the image is not found, you'll receive a ``404 Not Found`` error.
+## Customization
 
-## Notes
-
-- The filename is unique for each generated image.
-  
-- Images may not be stored indefinitely. It's recommended to retrieve and save important images promptly.
-  
-- If you're building a frontend application, you can use this URL directly in an ``<img>`` tag's ``src`` attribute.
+- To add or remove Python dependencies, modify the `requirements.txt` file.
+- To change S3 sync behavior, edit the `sync_s3.sh` script.
+- For changes to the Stable Diffusion Web UI itself, modify the appropriate files after cloning in the Dockerfile.
 
 ## Troubleshooting
 
-- If you receive a 404 error, double-check that you're using the correct filename.
-  
-- Ensure that you're using the correct base URL for your Salad Cloud deployment.
-  
-- If problems persist, check the logs of your Salad Cloud deployment for any error messages.
+- Check the logs provided by Salad Cloud for any error messages.
+- Ensure all required environment variables are set correctly.
+- Verify that your S3 bucket is accessible and has the correct permissions.
+- If facing IPv6 issues, ensure your Salad Cloud configuration supports IPv6.
+
+## Contributing
+
+Contributions to improve the project are welcome. Please follow these steps:
+
+1. Fork the repository
+2. Create a new branch for your feature
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+For more information on the Stable Diffusion Web UI, visit the [official repository](https://github.com/AUTOMATIC1111/stable-diffusion-webui).
+
+For Salad Cloud documentation, visit [Salad Cloud Documentation](https://docs.salad.com/).
